@@ -1,7 +1,8 @@
 """ Our DeepRacer training code """
 
-SPEED_THRESHOLD = 3
+SPEED_THRESHOLD = 5
 ABS_STEERING_THRESHOLD = 20.0
+TOTAL_NUM_STEPS = 250
 
 def reward_function(params):
     """ Reward function for training our deep racer """
@@ -14,6 +15,8 @@ def reward_function(params):
     track_width = params['track_width']
     distance_from_center = params['distance_from_center']
     steering = abs(params['steering_angle'])
+    steps = params['steps']
+    progress = params['progress']
 
     # Penalise if car moves too slowly
     if speed < SPEED_THRESHOLD:
@@ -31,6 +34,20 @@ def reward_function(params):
     # Penalise if steering too much
     if steering > ABS_STEERING_THRESHOLD:
         reward *= 0.8
+
+    # Give additional reward if the car pass every 50 steps faster than expected 
+    if (steps % 50) == 0 and progress > (steps / TOTAL_NUM_STEPS) * 100:
+        reward += 10.0
+
+    # Give more rewards the further my car goes
+    if progress >= 90:
+        reward *= 1.4
+    elif progress >= 80:
+        reward *= 1.3
+    elif progress >= 70:
+        reward *= 1.2
+    elif progress >= 60:
+        reward *= 1.1
 
     # Penalise heavily if wheels go off track
     if all_wheels_on_track:
