@@ -29,14 +29,16 @@ def reward_straight_track(params):
         else:
             slope1 = ydiff1 / xdiff1
         if xdiff2 == 0:
-            slope1 = ydiff2
+            slope2 = ydiff2
         elif ydiff2 == 0:
-            slope1 = xdiff2
+            slope2 = xdiff2
         else:
-            slope1 = ydiff2 / xdiff2
+            slope2 = ydiff2 / xdiff2
 
         if slope1 == slope2 and abs(params['steering_angle']) < 5:
             return 2
+        if slope1 == slope2 and abs(params['steering_angle']) > 5:
+            return 0.8
     return 1
 
 def reward_function(params):
