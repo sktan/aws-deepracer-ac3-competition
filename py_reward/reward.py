@@ -4,7 +4,7 @@ SPEED_THRESHOLD = 5
 ABS_STEERING_THRESHOLD = 20.0
 TOTAL_NUM_STEPS = 200
 
-def reward_straight_track(params):
+def reward_turning_track(params):
     """ Determines if a track is going straight for the next x waypoints """
     waypoints = params['waypoints']
     closest_waypoints = params['closest_waypoints']
@@ -46,6 +46,48 @@ def reward_straight_track(params):
     # Otherwise, we'll just not modify our rewards
     return 1
 
+def reward_straight_track(params):
+    """ Determines if a track is going straight for the next x waypoints """
+    waypoints = params['waypoints']
+    closest_waypoints = params['closest_waypoints']
+
+    # Make sure we dont go out of bounds for our waypoints array
+    if closest_waypoints[1] + 1 < len(waypoints):
+        prev_point = waypoints[closest_waypoints[0]]
+        next_point = waypoints[closest_waypoints[1]]
+        next_point2 = waypoints[closest_waypoints[1] + 1]
+
+        ydiff1 = next_point[0] - prev_point[0]
+        ydiff2 = next_point2[0] - prev_point[0]
+        xdiff1 = next_point[1] - prev_point[1]
+        xdiff2 = next_point2[1] - prev_point[1]
+
+        slope1 = 0
+        slope2 = 0
+        if xdiff1 == 0:
+            slope1 = ydiff1
+        elif ydiff1 == 0:
+            slope1 = xdiff1
+        else:
+            slope1 = ydiff1 / xdiff1
+        if xdiff2 == 0:
+            slope2 = ydiff2
+        elif ydiff2 == 0:
+            slope2 = xdiff2
+        else:
+            slope2 = ydiff2 / xdiff2
+
+        # If is a curved line and we're steering
+        # we'll give a reward
+        if slope1 != slope2 and abs(params['steering_angle']) > 5:
+            return 2
+        # Otherwise if it's a curved line, and we're understeering
+        # punish the model a bit
+        if slope1 != slope2 and abs(params['steering_angle']) < 5:
+            return 0.8
+    # Otherwise, we'll just not modify our rewards
+    return 1
+
 def reward_function(params):
     """ Reward function for training our deep racer """
     # Initialise rewards
@@ -74,6 +116,7 @@ def reward_function(params):
 
     # Penalise if steering too much
     reward *= reward_straight_track(params)
+    reward *= reward_straight_track(params)
 
     # Give additional reward if the car pass every 50 steps faster than expected
     if (steps % 50) == 0 and progress > (steps / TOTAL_NUM_STEPS) * 100:
@@ -93,5 +136,5 @@ def reward_function(params):
     if all_wheels_on_track:
         reward *= 1.2
     else:
-        reward *= 0.01
+        reward *= 0.011
     return float(reward)
