@@ -35,13 +35,13 @@ def reward_turning_track(params):
         else:
             slope2 = ydiff2 / xdiff2
 
-        # If is a straight line and we're not steering too much
+        # If is a curved line and we're steering
         # we'll give a reward
-        if slope1 == slope2 and abs(params['steering_angle']) < 5:
+        if slope1 != slope2 and abs(params['steering_angle']) > 5:
             return 2
-        # Otherwise if it's a straight line, and we're oversteering
+        # Otherwise if it's a curved line, and we're understeering
         # punish the model a bit
-        if slope1 == slope2 and abs(params['steering_angle']) > 5:
+        if slope1 != slope2 and abs(params['steering_angle']) < 5:
             return 0.8
     # Otherwise, we'll just not modify our rewards
     return 1
@@ -77,13 +77,13 @@ def reward_straight_track(params):
         else:
             slope2 = ydiff2 / xdiff2
 
-        # If is a curved line and we're steering
+        # If is a straight line and we're not steering too much
         # we'll give a reward
-        if slope1 != slope2 and abs(params['steering_angle']) > 5:
+        if slope1 == slope2 and abs(params['steering_angle']) < 5:
             return 2
-        # Otherwise if it's a curved line, and we're understeering
+        # Otherwise if it's a straight line, and we're oversteering
         # punish the model a bit
-        if slope1 != slope2 and abs(params['steering_angle']) < 5:
+        if slope1 == slope2 and abs(params['steering_angle']) > 5:
             return 0.8
     # Otherwise, we'll just not modify our rewards
     return 1
